@@ -40,23 +40,45 @@ var handleLocationError = function(browserHasGeolocation, infoWindow, pos) {
 };
 
 //This should be a promise
-var geocodeAddress = function(address) {
-	geoCoder.geocode({'address':address}, function(results, status){
-		if(status === google.maps.GeocoderStatus.OK){
-			console.log("The destination: " + results[0].geometry.location)
-			return results[0].geometry.location;
-		} else {
-			console.log("A problem occurred")
-		}
-	})
-}
+
 
 var app = angular.module("mapApp", [])
 	.controller("mapController", function($scope){
 		$scope.query = {};
 
+		var makeMarker = function(infoWindow) {
+			console.log("Making Marker")
+			var marker = new google.maps.Marker({
+					position: $scope.query.destPos,
+					map:map
+				});
+
+				marker.addListener('click', function(){
+					infoWindow.open(map,marker);
+				})
+				console.log(infoWindow)
+				console.log("Marker made.")
+
+		}
+
+		var geocodeAddress = function(address, callback, infoWindow) {
+			geoCoder.geocode({'address':address}, function(results, status){
+				if(status === google.maps.GeocoderStatus.OK){
+					console.log("Geocoded.")
+					console.log("The address" + results[0].geometry.location)
+					$scope.query.destPos = results[0].geometry.location;
+					callback(infoWindow);
+				} else {
+					console.log("A problem occurred")
+				}
+			})
+
+			
+		}
+
 		//Add a new marker to the map
 		$scope.submit = function() {
+			console.log("Submitted.")
 			//Makes a popup with desired information
 			var contentString = "<h3>" + $scope.query.name + "</h3>" +
 			"<p>Destination: " +
@@ -72,21 +94,8 @@ var app = angular.module("mapApp", [])
 			var infoWindow = new google.maps.InfoWindow({
 				content: contentString
 			});
-
-			//Geocode the destination location, and set the marker afterwards
-			var $scope.query.destPos = geocodeAddress($scope.query.destString).then(function(geolocale){
-				var marker = new google.maps.Marker({
-					position: $scope.query.destPos,
-					map:map
-				});
-				console.log("The Marker: " + marker)
-
-				marker.addListener('click', function(){
-					infoWindow.open(map,marker);
-				})
-				console.log("Done.")
-			})
-				
+			
+			geocodeAddress($scope.query.destString, makeMarker, infoWindow);	
 		}
 	})
 
