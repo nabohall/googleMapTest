@@ -12,7 +12,9 @@ function initMap() {
 	});
 
 
-	geoCoder = new google.maps.Geocoder();
+	geoCoder = new google.maps.Geocoder({
+		region:
+	});
 
   // Try HTML5 geolocation.
 	if (navigator.geolocation) {
